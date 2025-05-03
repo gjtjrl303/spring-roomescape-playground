@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import roomescape.domain.Reservation;
 import roomescape.dto.ReservationResponse;
+import roomescape.repository.MemoryReservationRepository;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -16,9 +17,7 @@ import java.util.stream.Collectors;
 @Controller
 public class ReservationController {
 
-    private static Long sequence = 0L;
-
-    private List<Reservation> reservations = new ArrayList<>();
+    private final MemoryReservationRepository reservationRepository = new MemoryReservationRepository();
 
     @GetMapping("/reservation")
     public String reservation() {
@@ -28,6 +27,7 @@ public class ReservationController {
     @ResponseBody
     @GetMapping("/reservations")
     public List<ReservationResponse> findAll() {
+        List<Reservation> reservations = reservationRepository.findAll();
         return reservations.stream()
                 .map(ReservationResponse::from)
                 .collect(Collectors.toList());
@@ -35,8 +35,9 @@ public class ReservationController {
 
     @PostConstruct
     public void initData() {
-        reservations.add(new Reservation(++sequence, "브라운", LocalDate.parse("2023-01-01"), LocalTime.parse("10:00")));
-        reservations.add(new Reservation(++sequence, "브라운", LocalDate.parse("2023-01-02"), LocalTime.parse("11:00")));
-        reservations.add(new Reservation(++sequence, "브라운", LocalDate.parse("2023-01-03"), LocalTime.parse("12:00")));
+        reservationRepository.save(new Reservation("브라운", LocalDate.parse("2023-01-01"), LocalTime.parse("10:00")));
+        reservationRepository.save(new Reservation("브라운", LocalDate.parse("2023-01-02"), LocalTime.parse("11:00")));
+        reservationRepository.save(new Reservation("브라운", LocalDate.parse("2023-01-03"), LocalTime.parse("12:00")));
+
     }
 }
