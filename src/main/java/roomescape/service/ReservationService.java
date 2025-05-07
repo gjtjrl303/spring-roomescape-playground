@@ -5,7 +5,6 @@ import roomescape.domain.Reservation;
 import roomescape.dto.ReservationRequest;
 import roomescape.dto.ReservationResponse;
 import roomescape.repository.ReservationRepository;
-import roomescape.validator.ReservationRequestValidator;
 
 import java.util.List;
 import java.util.stream.Collectors;
