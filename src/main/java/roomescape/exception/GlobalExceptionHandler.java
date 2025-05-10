@@ -26,4 +26,22 @@ public class GlobalExceptionHandler {
         ErrorResult errorResult = new ErrorResult("BAD_REQUEST", e.getMessage());
         return new ResponseEntity<>(errorResult, HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(NotFoundReservationException.class)
+    public ResponseEntity<ErrorResult> notFoundReservationHandler(NotFoundReservationException e) {
+        ErrorResult errorResult = new ErrorResult("NOT_FOUND_RESERVATION", e.getMessage());
+        return new ResponseEntity<>(errorResult, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(ReservationAlreadyExistsException.class)
+    public ResponseEntity<ErrorResult> AlreadyExistsHandler(ReservationAlreadyExistsException e) {
+        ErrorResult errorResult = new ErrorResult("RESERVATION_ALREADY_EXISTS", e.getMessage());
+        return new ResponseEntity<>(errorResult, HttpStatus.CONFLICT);
+    }
+
+    @ExceptionHandler(InvalidReservationDateException.class)
+    public ResponseEntity<ErrorResult> AlreadyExistsHandler(InvalidReservationDateException e) {
+        ErrorResult errorResult = new ErrorResult("INVALID_RESERVATION_DATE", e.getMessage());
+        return new ResponseEntity<>(errorResult, HttpStatus.BAD_REQUEST);
+    }
 }
