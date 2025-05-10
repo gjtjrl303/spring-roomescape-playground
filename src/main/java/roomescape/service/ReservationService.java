@@ -2,36 +2,35 @@ package roomescape.service;
 
 import org.springframework.stereotype.Service;
 import roomescape.domain.Reservation;
-import roomescape.dto.ReservationRequest;
-import roomescape.dto.ReservationResponse;
+import roomescape.mapper.ReservationMapper;
 import roomescape.repository.ReservationRepository;
+import roomescape.service.dto.ReservationResult;
+import roomescape.service.dto.SaveReservationCommand;
 
 import java.util.List;
-import java.util.stream.Collectors;
-
-import static roomescape.validator.ReservationRequestValidator.*;
 
 @Service
 public class ReservationService {
 
     private final ReservationRepository reservationRepository;
+    private final ReservationMapper mapper;
 
-    public ReservationService(ReservationRepository reservationRepository) {
+    public ReservationService(ReservationRepository reservationRepository, ReservationMapper mapper) {
         this.reservationRepository = reservationRepository;
+        this.mapper = mapper;
     }
 
-    public List<ReservationResponse> findAll() {
+    public List<ReservationResult> findAll() {
         List<Reservation> reservations = reservationRepository.findAll();
         return reservations.stream()
-                .map(ReservationResponse::from)
-                .collect(Collectors.toList());
+                .map(mapper::entityToResult)
+                .toList();
     }
 
-    public ReservationResponse save(ReservationRequest reservationRequest) {
-        validate(reservationRequest);
-        Reservation reservation = reservationRequest.toEntity();
+    public ReservationResult save(SaveReservationCommand command) {
+        Reservation reservation = mapper.commandToEntity(command);
         Reservation savedReservation = reservationRepository.save(reservation);
-        return ReservationResponse.from(savedReservation);
+        return mapper.entityToResult(savedReservation);
     }
 
     public void delete(Long id) {
