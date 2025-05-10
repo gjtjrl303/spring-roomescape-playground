@@ -18,12 +18,12 @@ public class Reservation {
     }
 
     public Reservation(String name, LocalDate date, LocalTime time) {
+        validateDate(date);
         this.id = null;
         this.name = name;
         this.date = date;
         this.time = time;
     }
-
     public Reservation withId(Long id) {
         return new Reservation(id, this.name, this.date, this.time);
     }
@@ -42,5 +42,11 @@ public class Reservation {
 
     public LocalTime getTime() {
         return time;
+    }
+
+    private void validateDate(LocalDate date) {
+        if (date.isBefore(LocalDate.now())) {
+            throw new IllegalArgumentException("예약 날짜는 오늘 이후여야 합니다.");
+        }
     }
 }
