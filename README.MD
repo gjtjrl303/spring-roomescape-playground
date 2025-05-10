@@ -85,7 +85,6 @@
 
 ### 잘못된 요청 (필드 누락 등)
 
-- 예외: `IllegalArgumentException`
 - 상태 코드: `400 Bad Request`
 - 발생 조건:
   - 예약 요청에서 name, date, time 중 하나라도 누락되거나
@@ -99,7 +98,6 @@
 }
 ```
 ### 존재하지 않는 예약 ID
-- 예외 `NotFoundReservationException`
 - 상태 코드: `400 Bad Request`
 - 발생 조건: 존재하지 않는 ID를 가진 예약을 삭제할 때
 
@@ -112,7 +110,6 @@
 ```
 
 ### JSON 파싱 오류
-- 예외 `HttpMessageNotReadableException`
 - 상태 코드: `400 Bad Request`
 - 발생 조건: 요청 JSON이 잘못된 형식일 경우
 
@@ -121,6 +118,30 @@
 {
   "code": "INVALID_JSON",
   "message": "형식이 옳바르지 않습니다"
+}
+```
+
+### 존재하는 ID 중복 예약
+- 상태 코드: `409 CONFLICT`
+- 발생 조건: 중복된 ID의 Reservation을 예약할 경우
+
+응답 예시:
+```json
+{
+  "code": "RESERVATION_ALREADY_EXISTS",
+  "message": "이미 ID가 존재하는 예약은 저장할 수 없습니다.
+}
+```
+
+### 예상하지 못한 오류
+- 상태 코드: `500 Internal Server Error`
+- 발생 조건: 서버 내부에서 예상하지 못한 예외가 발생한 경우
+
+응답 예시:
+```json
+{
+  "code": "INTERNAL_SERVER_ERROR",
+  "message": "예상치 못한 오류 발생"
 }
 ```
 
