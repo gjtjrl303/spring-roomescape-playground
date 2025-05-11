@@ -5,10 +5,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import roomescape.controller.dto.ReservationRequest;
 import roomescape.controller.dto.ReservationResponse;
-import roomescape.mapper.ReservationMapper;
 import roomescape.service.ReservationService;
 import roomescape.service.dto.ReservationResult;
-import roomescape.service.dto.SaveReservationCommand;
 
 import java.net.URI;
 import java.util.List;
@@ -17,30 +15,26 @@ import java.util.List;
 public class ReservationApiController {
 
     private final ReservationService reservationService;
-    private final ReservationMapper mapper;
 
-    public ReservationApiController(ReservationService reservationService, ReservationMapper mapper) {
+    public ReservationApiController(ReservationService reservationService) {
         this.reservationService = reservationService;
-        this.mapper = mapper;
     }
 
     @GetMapping("/reservations")
     public ResponseEntity<List<ReservationResponse>> findAll() {
         List<ReservationResult> all = reservationService.findAll();
         List<ReservationResponse> reservationResponses = all.stream()
-                .map(mapper::ResultToResponse)
+                .map(ReservationResponse::from)
                 .toList();
         return ResponseEntity.ok(reservationResponses);
     }
 
     @PostMapping("/reservations")
     public ResponseEntity<ReservationResponse> save(@RequestBody ReservationRequest reservationRequest) {
-        SaveReservationCommand command = mapper.requestToCommand(reservationRequest);
-        ReservationResult result = reservationService.save(command);
-        ReservationResponse reservationResponse = mapper.ResultToResponse(result);
+        ReservationResult result = reservationService.save(reservationRequest.toCommand());
         return ResponseEntity.created(URI.create("/reservations/" + result.id()))
                 .contentType(MediaType.APPLICATION_JSON)
-                .body(reservationResponse);
+                .body(ReservationResponse.from(result));
     }
 
     @DeleteMapping("/reservations/{id}")
