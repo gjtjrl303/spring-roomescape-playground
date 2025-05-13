@@ -33,7 +33,7 @@ public class ReservationRequest {
         return time;
     }
 
-    private static void validate(String name, LocalDate date, LocalTime time) {
+    private void validate(String name, LocalDate date, LocalTime time) {
         if (name == null || name.isBlank()) {
             throw new IllegalArgumentException("이름은 필수입니다.");
         }
