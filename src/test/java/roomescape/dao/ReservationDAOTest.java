@@ -7,6 +7,7 @@ import roomescape.domain.Reservation;
 import roomescape.exception.NotFoundReservationException;
 import roomescape.service.dto.ReservationCommand;
 
+import javax.sql.DataSource;
 import java.sql.SQLException;
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -17,12 +18,12 @@ import static org.assertj.core.api.Assertions.*;
 @SpringBootTest
 class ReservationDAOTest {
 
-    @Autowired
-    ReservationDAO reservationDAO;
+    @Autowired ReservationDAO reservationDAO;
+    @Autowired DataSource dataSource;
 
     @Test
     void connection() {
-        try (final var connection = reservationDAO.getConnection()){
+        try (final var connection = dataSource.getConnection()){
             assertThat(connection).isNotNull();
         }
         catch (SQLException e) {
