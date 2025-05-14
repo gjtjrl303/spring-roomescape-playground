@@ -1,130 +1,88 @@
 package roomescape.dao;
 
-import jakarta.annotation.PostConstruct;
-import org.springframework.stereotype.Component;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
+import org.springframework.jdbc.core.namedparam.SqlParameterSource;
+import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
+import org.springframework.stereotype.Repository;
 import roomescape.domain.Reservation;
 import roomescape.exception.NotFoundReservationException;
-import roomescape.exception.ReservationAlreadyExistsException;
 import roomescape.service.dto.ReservationCommand;
 
-import java.sql.*;
+import java.util.List;
 
-@Component
+@Repository
 public class ReservationDAO {
 
-    private static final String URL = "jdbc:h2:mem:testdb;DB_CLOSE_DELAY=-1";
-    private static final String USERNAME = "sa";
-    private static final String PASSWORD = "";
+    private final JdbcTemplate jdbcTemplate;
+    private final SimpleJdbcInsert jdbcInsert;
+
+    public ReservationDAO(JdbcTemplate jdbcTemplate) {
+        this.jdbcTemplate = jdbcTemplate;
+        this.jdbcInsert = new SimpleJdbcInsert(jdbcTemplate)
+                .withTableName("reservation")
+                .usingGeneratedKeyColumns("id");
+    }
 
     public Reservation save(Reservation reservation) {
-
-        String sql = "insert into reservation (name, date, time) values(?,?,?)";
-
-        if (reservation.getId() != null) {
-            throw new ReservationAlreadyExistsException("ID가 이미 존재하는 예약은 저장할 수 없습니다.");
-        }
-        try (final var connection = getConnection();
-             final var preparedStatement = connection.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-
-            preparedStatement.setString(1, reservation.getName());
-            preparedStatement.setDate(2, java.sql.Date.valueOf(reservation.getDate()));
-            preparedStatement.setTime(3, java.sql.Time.valueOf(reservation.getTime()));
-            preparedStatement.executeUpdate();
-            ResultSet keys = preparedStatement.getGeneratedKeys();
-            if (keys.next()) {
-                long id = keys.getLong(1);
-                return new Reservation(id,
-                        reservation.getName(),
-                        reservation.getDate(),
-                        reservation.getTime());
-            }
-            throw new SQLException("자동 생성된 키가 없습니다.");
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+        SqlParameterSource param =new BeanPropertySqlParameterSource(reservation);
+        Number key = jdbcInsert.executeAndReturnKey(param);
+        return new Reservation(
+                key.longValue(),
+                reservation.getName(),
+                reservation.getDate(),
+                reservation.getTime()
+        );
     }
 
     public Reservation findById(Long id) {
+        try {
+            String sql = "select * from reservation where id = ?";
+            return jdbcTemplate.queryForObject(
+                    sql,
+                    (resultSet, rowNum) -> new Reservation(
+                            resultSet.getLong("id"),
+                            resultSet.getString("name"),
+                            resultSet.getDate("date").toLocalDate(),
+                            resultSet.getTime("time").toLocalTime()
+                    ),
+                    id);
+        } catch (EmptyResultDataAccessException e) {
+            throw new NotFoundReservationException("해당 id의 예약이 존재하지 않습니다. id = " + id);
+        }
+    }
 
-        String sql = "select * from reservation where id = ?";
+    public void update(Long id, ReservationCommand reservationCommand) {
+        String sql = "update reservation set name = ?, date = ?, time = ? where id = ?";
+        jdbcTemplate.update(
+                sql,
+                reservationCommand.name(),
+                reservationCommand.date(),
+                reservationCommand.time(),
+                id
+        );
+    }
 
-
-        try (final var connection = getConnection();
-             final var preparedStatement = connection.prepareStatement(sql)) {
-
-            preparedStatement.setLong(1, id);
-            ResultSet resultSet = preparedStatement.executeQuery();
-            if (resultSet.next()) {
-                return new Reservation(
+    public List<Reservation> findAll() {
+        String sql = "select * from reservation";
+        return jdbcTemplate.query(
+                sql,
+                (resultSet, rowNum) -> new Reservation(
                         resultSet.getLong("id"),
                         resultSet.getString("name"),
                         resultSet.getDate("date").toLocalDate(),
                         resultSet.getTime("time").toLocalTime()
-                );
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-        throw new NotFoundReservationException("해당 예약이 존재하지 않습니다.");
-    }
-
-    public void update(Long id, ReservationCommand reservationCommand) {
-
-        String sql = "update reservation set name =?, date = ?, time = ? where id = ?";
-
-        try (final var connection = getConnection();
-             final var preparedStatement = connection.prepareStatement(sql)) {
-
-            preparedStatement.setString(1, reservationCommand.name());
-            preparedStatement.setDate(2, java.sql.Date.valueOf(reservationCommand.date()));
-            preparedStatement.setTime(3, java.sql.Time.valueOf(reservationCommand.time()));
-            preparedStatement.setLong(4, id);
-            int result = preparedStatement.executeUpdate();
-            if (result == 0) {
-                throw new NotFoundReservationException("해당 예약이 존재하지 않습니다.");
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
+                )
+        );
     }
 
     public void delete(Long id) {
-
         String sql = "delete from reservation where id = ?";
+        int update = jdbcTemplate.update(sql, id);
 
-        try (final var connection = getConnection();
-             final var preparedStatement = connection.prepareStatement(sql)) {
-
-            preparedStatement.setLong(1, id);
-            int result = preparedStatement.executeUpdate();
-            if (result == 0) {
-                throw new NotFoundReservationException("해당 예약이 존재하지 않습니다.");
-            }
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
-        }
-    }
-
-    // 드라이버 연결
-    public Connection getConnection() {
-        try {
-            return DriverManager.getConnection(URL, USERNAME, PASSWORD);
-        } catch (final SQLException e) {
-            System.err.println("DB 연결 오류:" + e.getMessage());
-            e.printStackTrace();
-            return null;
-        }
-    }
-
-    @PostConstruct
-    void init() {
-        String sql = "create table Reservation( id BIGINT AUTO_INCREMENT PRIMARY KEY, name varchar(50), date date, time time);";
-
-        try (final var connection = getConnection();
-             final var preparedStatement = connection.prepareStatement(sql)) {
-            preparedStatement.executeUpdate();
-        } catch (SQLException e) {
-            throw new RuntimeException(e);
+        if (update == 0) {
+            throw new NotFoundReservationException("삭제할 예약이 없습니다. id = " + id);
         }
     }
 }
