@@ -2,7 +2,6 @@ package roomescape.repository;
 
 import org.springframework.stereotype.Repository;
 import roomescape.domain.Reservation;
-import roomescape.exception.InvalidReservationDateException;
 import roomescape.exception.NotFoundReservationException;
 import roomescape.exception.ReservationAlreadyExistsException;
 
