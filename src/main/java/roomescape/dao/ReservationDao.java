@@ -2,6 +2,7 @@ package roomescape.dao;
 
 import org.springframework.dao.EmptyResultDataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.jdbc.core.RowMapper;
 import org.springframework.jdbc.core.namedparam.BeanPropertySqlParameterSource;
 import org.springframework.jdbc.core.namedparam.SqlParameterSource;
 import org.springframework.jdbc.core.simple.SimpleJdbcInsert;
@@ -40,12 +41,7 @@ public class ReservationDao {
             String sql = "select * from reservation where id = ?";
             return jdbcTemplate.queryForObject(
                     sql,
-                    (resultSet, rowNum) -> new Reservation(
-                            resultSet.getLong("id"),
-                            resultSet.getString("name"),
-                            resultSet.getDate("date").toLocalDate(),
-                            resultSet.getTime("time").toLocalTime()
-                    ),
+                    reservationRowMapper(),
                     id);
         } catch (EmptyResultDataAccessException e) {
             throw new NotFoundReservationException("해당 id의 예약이 존재하지 않습니다. id = " + id);
@@ -56,9 +52,9 @@ public class ReservationDao {
         String sql = "update reservation set name = ?, date = ?, time = ? where id = ?";
         jdbcTemplate.update(
                 sql,
-                reservationCommand.name(),
-                reservationCommand.date(),
-                reservationCommand.time(),
+                reservation.getName(),
+                reservation.getDate(),
+                reservation.getTime(),
                 id
         );
     }
@@ -67,12 +63,7 @@ public class ReservationDao {
         String sql = "select * from reservation";
         return jdbcTemplate.query(
                 sql,
-                (resultSet, rowNum) -> new Reservation(
-                        resultSet.getLong("id"),
-                        resultSet.getString("name"),
-                        resultSet.getDate("date").toLocalDate(),
-                        resultSet.getTime("time").toLocalTime()
-                )
+                reservationRowMapper()
         );
     }
 
@@ -83,5 +74,14 @@ public class ReservationDao {
         if (update == 0) {
             throw new NotFoundReservationException("삭제할 예약이 없습니다. id = " + id);
         }
+    }
+
+    private RowMapper<Reservation> reservationRowMapper() {
+        return (resultSet, rowNum) -> new Reservation(
+                resultSet.getLong("id"),
+                resultSet.getString("name"),
+                resultSet.getDate("date").toLocalDate(),
+                resultSet.getTime("time").toLocalTime()
+        );
     }
 }
