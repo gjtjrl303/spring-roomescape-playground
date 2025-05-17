@@ -1,6 +1,6 @@
 package roomescape.controller.dto;
 
-import roomescape.service.dto.ReservationCommand;
+import roomescape.service.dto.ReservationSaveCommand;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -17,8 +17,8 @@ public class ReservationRequest {
         this.time = time;
     }
 
-    public ReservationCommand toCommand() {
-        return new ReservationCommand(name, date, time);
+    public ReservationSaveCommand toCommand() {
+        return new ReservationSaveCommand(name, date, time);
     }
 
     public String getName() {
