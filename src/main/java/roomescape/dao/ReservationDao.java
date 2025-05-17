@@ -38,7 +38,7 @@ public class ReservationDao {
 
     public Reservation findById(Long id) {
         try {
-            String sql = "select * from reservation where id = ?";
+            String sql = "SELECT * FROM reservation WHERE id = ?";
             return jdbcTemplate.queryForObject(
                     sql,
                     reservationRowMapper(),
@@ -48,8 +48,13 @@ public class ReservationDao {
         }
     }
 
-    public void update(Long id, ReservationCommand reservationCommand) {
-        String sql = "update reservation set name = ?, date = ?, time = ? where id = ?";
+    public void update(Long id, Reservation reservation) {
+        String sql = """
+            UPDATE reservation 
+            SET name = ?, date = ?, time = ?
+            WHERE id = ?
+            """;
+
         jdbcTemplate.update(
                 sql,
                 reservation.getName(),
@@ -60,7 +65,7 @@ public class ReservationDao {
     }
 
     public List<Reservation> findAll() {
-        String sql = "select * from reservation";
+        String sql = "SELECT * FROM reservation";
         return jdbcTemplate.query(
                 sql,
                 reservationRowMapper()
@@ -68,7 +73,7 @@ public class ReservationDao {
     }
 
     public void delete(Long id) {
-        String sql = "delete from reservation where id = ?";
+        String sql = "DELETE FROM reservation WHERE id = ?";
         int update = jdbcTemplate.update(sql, id);
 
         if (update == 0) {
