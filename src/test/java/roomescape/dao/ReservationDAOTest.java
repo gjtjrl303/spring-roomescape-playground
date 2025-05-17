@@ -5,7 +5,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import roomescape.domain.Reservation;
 import roomescape.exception.NotFoundReservationException;
-import roomescape.service.dto.ReservationCommand;
+import roomescape.service.dto.ReservationSaveCommand;
 
 import javax.sql.DataSource;
 import java.sql.SQLException;
@@ -18,7 +18,8 @@ import static org.assertj.core.api.Assertions.*;
 @SpringBootTest
 class ReservationDAOTest {
 
-    @Autowired ReservationDAO reservationDAO;
+    @Autowired
+    ReservationDao reservationDao;
     @Autowired DataSource dataSource;
 
     @Test
@@ -34,7 +35,7 @@ class ReservationDAOTest {
     @Test
     void save() {
         Reservation reservation = new Reservation( "name", LocalDate.parse("2026-05-02"), LocalTime.parse("12:00"));
-        Reservation savedReservation = reservationDAO.save(reservation);
+        Reservation savedReservation = reservationDao.save(reservation);
 
         assertThat(savedReservation.getName()).isEqualTo("name");
         assertThat(savedReservation.getDate()).isEqualTo(LocalDate.parse("2026-05-02"));
@@ -45,10 +46,10 @@ class ReservationDAOTest {
     void findById() {
         //given
         Reservation reservation = new Reservation("name", LocalDate.parse("2026-05-02"), LocalTime.parse("12:00"));
-        Reservation savedReservation = reservationDAO.save(reservation);
+        Reservation savedReservation = reservationDao.save(reservation);
 
         //when
-        Reservation findReservation = reservationDAO.findById(savedReservation.getId());
+        Reservation findReservation = reservationDao.findById(savedReservation.getId());
 
         //then
         assertThat(findReservation.getId()).isEqualTo(savedReservation.getId());
@@ -61,12 +62,12 @@ class ReservationDAOTest {
     void update() {
         //given
         Reservation reservation = new Reservation( "name", LocalDate.parse("2026-05-02"), LocalTime.parse("12:00"));
-        Reservation savedReservation = reservationDAO.save(reservation);
-        ReservationCommand reservationCommand = new ReservationCommand("name1", LocalDate.parse("2026-05-03"), LocalTime.parse("13:00"));
+        Reservation savedReservation = reservationDao.save(reservation);
+        ReservationSaveCommand reservationCommand = new ReservationSaveCommand("name1", LocalDate.parse("2026-05-03"), LocalTime.parse("13:00"));
 
         //when
-        reservationDAO.update(savedReservation.getId(), reservationCommand);
-        Reservation updatedReservation = reservationDAO.findById(savedReservation.getId());
+        reservationDao.update(savedReservation.getId(), reservationCommand.toEntity());
+        Reservation updatedReservation = reservationDao.findById(savedReservation.getId());
         //then
         assertThat(updatedReservation.getId()).isEqualTo(savedReservation.getId());
         assertThat(updatedReservation.getName()).isEqualTo(reservationCommand.name());
@@ -78,13 +79,13 @@ class ReservationDAOTest {
     void delete() {
         //given
         Reservation reservation = new Reservation( "name", LocalDate.parse("2026-05-02"), LocalTime.parse("12:00"));
-        Reservation savedReservation = reservationDAO.save(reservation);
+        Reservation savedReservation = reservationDao.save(reservation);
 
         //when
-        reservationDAO.delete(savedReservation.getId());
+        reservationDao.delete(savedReservation.getId());
 
         //then
-        assertThatThrownBy(() -> reservationDAO.findById(savedReservation.getId()))
+        assertThatThrownBy(() -> reservationDao.findById(savedReservation.getId()))
                 .isInstanceOf(NotFoundReservationException.class);
     }
 }
