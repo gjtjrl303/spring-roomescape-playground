@@ -1,6 +1,6 @@
 package roomescape.controller.dto;
 
-import roomescape.service.dto.SaveReservationCommand;
+import roomescape.service.dto.ReservationSaveCommand;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -17,8 +17,8 @@ public class ReservationRequest {
         this.time = time;
     }
 
-    public SaveReservationCommand toCommand() {
-        return new SaveReservationCommand(name, date, time);
+    public ReservationSaveCommand toCommand() {
+        return new ReservationSaveCommand(name, date, time);
     }
 
     public String getName() {
@@ -33,7 +33,7 @@ public class ReservationRequest {
         return time;
     }
 
-    private static void validate(String name, LocalDate date, LocalTime time) {
+    private void validate(String name, LocalDate date, LocalTime time) {
         if (name == null || name.isBlank()) {
             throw new IllegalArgumentException("이름은 필수입니다.");
         }
