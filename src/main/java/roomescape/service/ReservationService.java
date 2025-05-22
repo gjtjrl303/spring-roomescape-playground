@@ -2,7 +2,9 @@ package roomescape.service;
 
 import org.springframework.stereotype.Service;
 import roomescape.dao.ReservationDao;
+import roomescape.dao.TimeDao;
 import roomescape.domain.Reservation;
+import roomescape.domain.Time;
 import roomescape.service.dto.ReservationSaveCommand;
 import roomescape.service.dto.ReservationResult;
 
@@ -12,13 +14,16 @@ import java.util.List;
 public class ReservationService {
 
     private final ReservationDao reservationDao;
+    private final TimeDao timeDao;
 
-    public ReservationService(ReservationDao reservationDAO) {
-        this.reservationDao = reservationDAO;
+    public ReservationService(ReservationDao reservationDao, TimeDao timeDao) {
+        this.reservationDao = reservationDao;
+        this.timeDao = timeDao;
     }
 
     public ReservationResult save(ReservationSaveCommand command) {
-        Reservation reservation = command.toEntity();
+        Time time = timeDao.findById(command.timeId());
+        Reservation reservation = command.toEntity(time);
         Reservation savedReservation = reservationDao.save(reservation);
         return ReservationResult.from(savedReservation);
     }
