@@ -1,9 +1,10 @@
 package roomescape.dao;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
-import org.springframework.test.annotation.DirtiesContext;
+import org.springframework.jdbc.core.JdbcTemplate;
 import roomescape.domain.Time;
 
 import java.time.LocalTime;
@@ -13,10 +14,17 @@ import java.util.Optional;
 import static org.assertj.core.api.Assertions.*;
 
 @SpringBootTest
-@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 class TimeDaoTest {
 
     @Autowired TimeDao timeDao;
+    @Autowired private JdbcTemplate jdbcTemplate;
+
+    @BeforeEach
+    void resetDatabase() {
+        jdbcTemplate.execute("DELETE FROM reservation");
+        jdbcTemplate.execute("DELETE FROM time");
+        jdbcTemplate.execute("ALTER TABLE time ALTER COLUMN id RESTART WITH 1");
+    }
 
     @Test
     void save() {
@@ -38,7 +46,8 @@ class TimeDaoTest {
         Time save = timeDao.save(time);
 
         //when
-        Time byId = timeDao.findById(save.getId());
+        Time byId = timeDao.findById(save.getId()).get();
+
 
         //then
         assertThat(byId.getId()).isEqualTo(1L);
