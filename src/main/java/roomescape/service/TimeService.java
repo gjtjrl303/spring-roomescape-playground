@@ -1,30 +1,36 @@
 package roomescape.service;
 
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
+import roomescape.dao.ReservationDao;
 import roomescape.dao.TimeDao;
 import roomescape.domain.Time;
+import roomescape.exception.CannotDeleteTimeWithExistingReservationException;
 import roomescape.service.dto.TimeResult;
 import roomescape.service.dto.TimeSaveCommand;
 
 import java.util.List;
-import java.util.Optional;
+
 
 @Service
 public class TimeService {
 
+    private final ReservationDao reservationDao;
     private final TimeDao timeDao;
 
-    public TimeService(TimeDao timeDao) {
+    public TimeService(TimeDao timeDao, ReservationDao reservationDao) {
+        this.reservationDao = reservationDao;
         this.timeDao = timeDao;
     }
 
     public TimeResult save(TimeSaveCommand timeSaveCommand) {
-        Optional<Time> existing = timeDao.findByTime(timeSaveCommand.time());
-        if (existing.isPresent()) {
-            throw new IllegalArgumentException("같은 시간은 한번만 등록할 수 있습니다");
+        try {
+            Time saveTime = timeDao.save(timeSaveCommand.toEntity());
+            return TimeResult.from(saveTime);
+        } catch (
+                DuplicateKeyException e) {
+            throw new IllegalArgumentException("이미 등록된 시간입니다");
         }
-        Time saveTime = timeDao.save(timeSaveCommand.toEntity());
-        return TimeResult.from(saveTime);
     }
 
     public List<TimeResult> findAll() {
@@ -35,8 +41,9 @@ public class TimeService {
     }
 
     public void delete(Long id) {
+        if (reservationDao.existsByTimeId(id)) {
+            throw new CannotDeleteTimeWithExistingReservationException("저장된 시간이 있어서 삭제할 수 없습니다");
+        }
         timeDao.delete(id);
     }
-
-
 }
