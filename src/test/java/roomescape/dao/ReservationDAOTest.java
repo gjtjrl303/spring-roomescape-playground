@@ -1,8 +1,10 @@
 package roomescape.dao;
 
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.test.annotation.DirtiesContext;
 import roomescape.domain.Reservation;
 import roomescape.domain.Time;
@@ -17,7 +19,6 @@ import static org.assertj.core.api.Assertions.*;
 
 
 @SpringBootTest
-@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
 class ReservationDAOTest {
 
     @Autowired
@@ -26,6 +27,16 @@ class ReservationDAOTest {
     DataSource dataSource;
     @Autowired
     TimeDao timeDao;
+    @Autowired
+    JdbcTemplate jdbcTemplate;
+
+    @BeforeEach
+    void resetDatabase() {
+        jdbcTemplate.execute("DELETE FROM reservation");
+        jdbcTemplate.execute("DELETE FROM time");
+        jdbcTemplate.execute("ALTER TABLE time ALTER COLUMN id RESTART WITH 1");
+        jdbcTemplate.execute("ALTER TABLE reservation ALTER COLUMN id RESTART WITH 1");
+    }
 
     @Test
     void connection() {
