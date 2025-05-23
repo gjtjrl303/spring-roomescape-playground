@@ -1,6 +1,5 @@
 package roomescape.controller.dto;
 
-import roomescape.domain.Time;
 import roomescape.service.dto.ReservationResult;
 
 import java.time.LocalDate;
@@ -9,7 +8,7 @@ public record ReservationResponse(
         Long id,
         String name,
         LocalDate date,
-        Time time
+        TimeResponse time
 ) {
 
     public static ReservationResponse from(ReservationResult result) {
@@ -17,7 +16,7 @@ public record ReservationResponse(
                 result.id(),
                 result.name(),
                 result.date(),
-                result.time()
+                TimeResponse.from(result.time())
         );
     }
 }
