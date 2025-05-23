@@ -62,6 +62,15 @@ public class ReservationDao {
         }
     }
 
+    public boolean existsByTimeId(Long timeId) {
+        String sql = "SELECT COUNT(*) FROM reservation WHERE time_id = ?";
+
+        Integer count = jdbcTemplate.queryForObject(sql, Integer.class, timeId);
+
+        return count != null && count > 0;
+
+    }
+
     public void update(Long id, Reservation reservation) {
         String sql = """
                 UPDATE reservation 
@@ -119,6 +128,4 @@ public class ReservationDao {
             );
         };
     }
-
-    ;
 }
