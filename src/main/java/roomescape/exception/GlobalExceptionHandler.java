@@ -44,4 +44,10 @@ public class GlobalExceptionHandler {
         ErrorResult errorResult = new ErrorResult("INVALID_RESERVATION_DATE", e.getMessage());
         return new ResponseEntity<>(errorResult, HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(CannotDeleteTimeWithExistingReservationException.class)
+    public ResponseEntity<ErrorResult> handleCannotDeleteTime(CannotDeleteTimeWithExistingReservationException e) {
+        ErrorResult errorResult = new ErrorResult("CANNOT_DELETE_RESERVED_TIME", e.getMessage());
+        return new ResponseEntity<>(errorResult, HttpStatus.BAD_REQUEST);
+    }
 }
