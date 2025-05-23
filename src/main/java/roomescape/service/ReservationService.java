@@ -22,7 +22,8 @@ public class ReservationService {
     }
 
     public ReservationResult save(ReservationSaveCommand command) {
-        Time time = timeDao.findById(command.timeId());
+        Time time = timeDao.findById(command.timeId())
+                .orElseThrow(() -> new IllegalArgumentException("존재하지 않는 시간입니다. id = " + command.timeId()));
         Reservation reservation = command.toEntity(time);
         Reservation savedReservation = reservationDao.save(reservation);
         return ReservationResult.from(savedReservation);

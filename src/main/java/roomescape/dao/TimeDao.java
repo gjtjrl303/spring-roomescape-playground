@@ -32,13 +32,17 @@ public class TimeDao {
         return time.withId(key.longValue());
     }
 
-    public Time findById(Long id) {
+    public Optional<Time> findById(Long id) {
         String sql = "SELECT * FROM time WHERE id = ?";
-        return jdbcTemplate.queryForObject(
-                sql,
-                timeRowMapper(),
-                id
-        );
+        try {
+            return Optional.of(jdbcTemplate.queryForObject(
+                    sql,
+                    timeRowMapper(),
+                    id
+            ));
+        } catch (EmptyResultDataAccessException e) {
+            return Optional.empty();
+        }
     }
 
     public Optional<Time> findByTime(LocalTime time) {
