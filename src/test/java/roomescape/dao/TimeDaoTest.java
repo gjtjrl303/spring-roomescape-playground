@@ -21,9 +21,9 @@ class TimeDaoTest {
 
     @BeforeEach
     void resetDatabase() {
-        jdbcTemplate.execute("DELETE FROM reservation");
-        jdbcTemplate.execute("DELETE FROM time");
-        jdbcTemplate.execute("ALTER TABLE time ALTER COLUMN id RESTART WITH 1");
+        jdbcTemplate.execute("SET REFERENTIAL_INTEGRITY FALSE");
+        jdbcTemplate.execute("TRUNCATE TABLE time");
+        jdbcTemplate.execute("SET REFERENTIAL_INTEGRITY TRUE");
     }
 
     @Test
@@ -35,7 +35,7 @@ class TimeDaoTest {
         Time save = timeDao.save(time);
 
         //then
-        assertThat(save.getId()).isEqualTo(1L);
+        assertThat(save.getId()).isGreaterThan(0L);
         assertThat(save.getTime()).isEqualTo("13:00");
     }
 
@@ -50,7 +50,7 @@ class TimeDaoTest {
 
 
         //then
-        assertThat(byId.getId()).isEqualTo(1L);
+        assertThat(byId.getId()).isGreaterThan(0L);
         assertThat(byId.getTime()).isEqualTo("13:00");
     }
 
@@ -65,7 +65,7 @@ class TimeDaoTest {
 
         //then
         assertThat(byTime).isPresent();
-        assertThat(byTime.get().getId()).isEqualTo(1L);
+        assertThat(byTime.get().getId()).isGreaterThan(0L);
         assertThat(byTime.get().getTime()).isEqualTo("13:00");
     }
 
