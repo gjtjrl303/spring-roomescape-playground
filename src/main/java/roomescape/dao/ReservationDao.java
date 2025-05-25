@@ -50,7 +50,7 @@ public class ReservationDao {
                         r.date,
                         t.id as time_id,
                         t.time
-                    FROM reservation as r inner join time as t on r.time_id = t.id
+                    FROM reservation as r join time as t on r.time_id = t.id
                     WHERE r.id = ?
                     """;
             return jdbcTemplate.queryForObject(
@@ -95,7 +95,7 @@ public class ReservationDao {
                     r.date,
                     t.id as time_id,
                     t.time
-                FROM reservation as r inner join time as t on r.time_id = t.id
+                FROM reservation as r join time as t on r.time_id = t.id
                 """;
 
         return jdbcTemplate.query(
