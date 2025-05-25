@@ -4,6 +4,7 @@ import org.assertj.core.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import roomescape.exception.NotFoundTimeException;
 import roomescape.service.dto.ReservationSaveCommand;
 
 import java.time.LocalDate;
@@ -20,7 +21,7 @@ class ReservationServiceTest {
 
         //then
         Assertions.assertThatThrownBy(() -> reservationService.save(command))
-                .isInstanceOf(IllegalArgumentException.class)
+                .isInstanceOf(NotFoundTimeException.class)
                 .hasMessage("존재하지 않는 시간입니다. id = " + command.timeId());
     }
 }

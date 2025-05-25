@@ -6,6 +6,7 @@ import roomescape.dao.ReservationDao;
 import roomescape.dao.TimeDao;
 import roomescape.domain.Time;
 import roomescape.exception.CannotDeleteTimeWithExistingReservationException;
+import roomescape.exception.DuplicateTimeException;
 import roomescape.service.dto.TimeResult;
 import roomescape.service.dto.TimeSaveCommand;
 
@@ -29,7 +30,7 @@ public class TimeService {
             return TimeResult.from(saveTime);
         } catch (
                 DuplicateKeyException e) {
-            throw new IllegalArgumentException("이미 등록된 시간입니다");
+            throw new DuplicateTimeException("이미 등록된 시간입니다");
         }
     }
 
